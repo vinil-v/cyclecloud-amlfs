@@ -17,5 +17,7 @@ rhel)
         echo -e "enabled=1" >> ${REPO_PATH}
         echo -e "gpgcheck=1" >> ${REPO_PATH}
         echo -e "gpgkey=https://packages.microsoft.com/keys/microsoft.asc" >> ${REPO_PATH}
+        yum clean all
+        sudo yum install amlfs-lustre-client-2.15.1_29_gbae0abe-$(uname -r | sed -e "s/\.$(uname -p)$//" | sed -re 's/[-_]/\./g')-1
         ;;
 esac
