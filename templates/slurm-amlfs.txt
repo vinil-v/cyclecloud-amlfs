@@ -29,10 +29,10 @@ Autoscale = $Autoscale
         slurm.ha_enabled = $configuration_slurm_ha_enabled
         slurm.launch_parameters = $configuration_slurm_launch_parameters
         
-	#AMLFS info
+	    #Azure Managed Lustre filesystem information
         amlfs.client_ver=$amlfs_client_install
         amlfs.mgs_ip=$mgs_ip
-	amlfs.mount_point=$client_path
+	    amlfs.mount_point=$client_path
 
         # Disable ip-XXXXXXXX hostname generation
         cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
@@ -318,6 +318,8 @@ Order = 10
 	[[parameter amlfs_client_install]]
         Label = Lustre Client Version
         Description = Lustre Client version
+        Config.Plugin = pico.form.Dropdown
+        Config.Entries := {[Label="Redhat-Alma-CentOS"; Value="2.15.1_29_gbae0abe"], [Label="Ubuntu"; Value="2.15.1-29-gbae0abe"]}
         DefaultValue = 2.15.1_29_gbae0abe
         Required = True
 
