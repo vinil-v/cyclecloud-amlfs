@@ -314,25 +314,34 @@ Order = 10
         Required = True
 
 [parameters Azure Managed Lustre FS]
-
-	[[parameter amlfs_client_install]]
+Order = 20
+       
+     [[parameters AMLFS Lustre Filesystem]]
+     Order = 30
+        [[[parameter About AMLFS Lustre Client]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+	Config.Template := "<table role=\"presentation\"></tr><tr><td><p>Information on AMLFS Lustre clients can be found on the <a href=\"https://learn.microsoft.com/en-us/azure/azure-managed-lustre/client-install/\" target=\"_blank\">Azure Managed Lustre Filesystem docs page</a>.</p></td></tr></table>"
+        Order = 20
+	
+	[[[parameter amlfs_client_install]]]
         Label = Lustre Client Version
         Description = Lustre Client version
-        Config.Plugin = pico.form.Dropdown
-        Config.Entries := {[Label="Redhat-Alma-CentOS"; Value="2.15.1_29_gbae0abe"], [Label="Ubuntu"; Value="2.15.1-29-gbae0abe"]}
         DefaultValue = 2.15.1_29_gbae0abe
         Required = True
 
-        [[parameter mgs_ip]]
+
+        [[[parameter mgs_ip]]]
+        Order = 20
         Label = MGS IP Address
         Description = MGS IP Address 
         DefaultValue = 1.0.0.1
         Required = True
 
-        [[parameter client_path]]
-        Label = Lustre Mount point
+        [[[parameter client_path]]]
+        Label = Lustre Mount point 
         Description = Path of the Luster mount point
-        DefaultValue = /mnt
+        DefaultValue = /lustre
         Required = True
 
 [parameters Network Attached Storage]
@@ -340,14 +349,14 @@ Order = 15
 
 
     [[parameters Scheduler Mount]]
-    Order = 5
+    Order = 15
         [[[parameter About sched]]]
         HideLabel = true
         Config.Plugin = pico.widget.HtmlTemplateWidget
         Config.Template = ''' <p>The directory <code>/sched</code> is a network attached mount and exists in all nodes of the cluster. 
             Slurm's configuration is linked in from this directory. It's managed by the scheduler node. 
             To disable the mount of the /sched directory, and to supply your own for a <strong>hybrid scenario</strong>, select the checkbox below '''
-        Order = 6
+        Order = 10
 
         [[[parameter NFSSchedDisable]]]
         HideLabel = true
@@ -438,7 +447,7 @@ Order = 15
     
 
 [parameters Advanced Settings]
-Order = 20
+Order = 25
 
     [[parameters Azure Settings]]
     Order = 10 
