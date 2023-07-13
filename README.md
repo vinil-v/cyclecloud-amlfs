@@ -39,7 +39,7 @@ The following parameters required for successful configuration.
 
 Create new cluster from the imported template(Slurm-AMLFS in this case) and in the Azure Managed Lustre FS section, add the above mentioned parameter. 
 
-<img src="https://raw.githubusercontent.com/vinil-v/cyclecloud-amlfs/main/images/amlfs-settings-in-cc.png" width="518" height="236">
+<img src="https://raw.githubusercontent.com/vinil-v/cyclecloud-amlfs/main/images/amlfs-settings-in-cc.png" width="462" height="236">
 
 
 Start the cluster. Make sure that the AMLFS is running and MGS IP is reachable to all the nodes.
