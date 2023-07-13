@@ -2,7 +2,7 @@
 ## Cluster Configuration File ##
 ################################
 
-[cluster OpenPBS]
+[cluster OpenPBS-AMLFS]
 IconUrl = static/cloud/cluster/ui/ClusterIcon/pbspro.png
 FormLayout = selectionpanel
 Category = Schedulers
