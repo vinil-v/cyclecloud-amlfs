@@ -1,11 +1,10 @@
-
 ################################
 ## Cluster Configuration File ##
 ################################
 
 [cluster Slurm-AMLFS]
-FormLayout = selectionpanel
 IconUrl = static/cloud/cluster/ui/ClusterIcon/slurm.png
+FormLayout = selectionpanel
 Category = Schedulers
 
 Autoscale = $Autoscale
@@ -21,6 +20,10 @@ Autoscale = $Autoscale
     ShutdownPolicy = $configuration_slurm_shutdown_policy
 
         [[[configuration]]]
+
+        slurm.install_pkg = azure-slurm-install-pkg-3.0.1.tar.gz
+        slurm.autoscale_pkg = azure-slurm-pkg-3.0.1.tar.gz
+
         slurm.version = $configuration_slurm_version
         slurm.accounting.enabled = $configuration_slurm_accounting_enabled
         slurm.accounting.url = $configuration_slurm_accounting_url
@@ -28,16 +31,15 @@ Autoscale = $Autoscale
         slurm.accounting.password = $configuration_slurm_accounting_password
         slurm.additional.config = $additional_slurm_config
         slurm.ha_enabled = $configuration_slurm_ha_enabled
-        slurm.launch_parameters = $configuration_slurm_launch_parameters
         
+        # Disable ip-XXXXXXXX hostname generation
+        cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
+        cyclecloud.hosts.simple_vpc_dns.enabled = ${NodeNameIsHostname==false}
+
 	    #Azure Managed Lustre filesystem information
         amlfs.client_ver=$amlfs_client_install
         amlfs.mgs_ip=$mgs_ip
 	    amlfs.mount_point=$client_path
-
-        # Disable ip-XXXXXXXX hostname generation
-        cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
-        cyclecloud.hosts.simple_vpc_dns.enabled = ${NodeNameIsHostname==false}
 
         # For fast spin-up after Deallocate, force an immediate re-converge on boot
         cyclecloud.converge_on_boot = true
@@ -52,7 +54,7 @@ Autoscale = $Autoscale
         cyclecloud.exports.defaults.samba.enabled = false      
         cshared.server.legacy_links_disabled = true
 
-        [[[cluster-init cyclecloud/slurm:default]]]
+        [[[cluster-init cyclecloud/slurm:default:3.0.1]]]
         Optional = true
 
         [[[cluster-init cyclecloud-amlfs:default:1.0.0]]]
@@ -98,7 +100,7 @@ Autoscale = $Autoscale
         cyclecloud.mounts.nfs_shared.disabled = ${NFSType != "External"}
 
 
-        [[[cluster-init cyclecloud/slurm:scheduler]]]
+        [[[cluster-init cyclecloud/slurm:scheduler:3.0.1]]]
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $UsePublicNetwork
@@ -126,7 +128,6 @@ Autoscale = $Autoscale
         fs_type = xfs
 
         [[[configuration cyclecloud.exports.builtinsched]]]
-	disabled = ${NFSSchedDisable}
         export_path = /sched
         options = no_root_squash
         samba.enabled = false
@@ -153,7 +154,7 @@ Autoscale = $Autoscale
         MachineType = $loginMachineType
         ImageName = $SchedulerImageName
 
-        [[[cluster-init cyclecloud/slurm:login]]]
+        [[[cluster-init cyclecloud/slurm:login:3.0.1]]]
         [[[configuration]]]
         autoscale.enabled = false
         slurm.node_prefix = ${ifThenElse(NodeNamePrefix=="Cluster Prefix", StrJoin("-", ClusterName, ""), NodeNamePrefix)}
@@ -167,7 +168,7 @@ Autoscale = $Autoscale
         slurm.node_prefix = ${ifThenElse(NodeNamePrefix=="Cluster Prefix", StrJoin("-", ClusterName, ""), NodeNamePrefix)}
         slurm.use_nodename_as_hostname = $NodeNameIsHostname
 
-        [[[cluster-init cyclecloud/slurm:execute]]]
+        [[[cluster-init cyclecloud/slurm:execute:3.0.1]]]
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $ExecuteNodesPublic
@@ -200,8 +201,23 @@ Autoscale = $Autoscale
         [[[configuration]]]
         slurm.hpc = false
         slurm.partition = htc
-	# set pcpu = false for all hyperthreaded VMs
-	slurm.use_pcpu = false
+        # set pcpu = false for all hyperthreaded VMs
+        slurm.use_pcpu = false
+
+    [[nodearray dynamic]]
+    Extends = nodearraybase
+    MachineType = $DynamicMachineType
+    ImageName = $DynamicImageName
+    MaxCoreCount = $MaxDynamicExecuteCoreCount
+
+    Interruptible = $DynamicUseLowPrio
+    MaxPrice = $DynamicSpotMaxPrice
+    AdditionalClusterInitSpecs = $DynamicClusterInitSpecs
+        [[[configuration]]]
+        slurm.hpc = false
+        slurm.dynamic_config := "-Z --conf \"Feature=dyn\""
+        # set pcpu = false for all hyperthreaded VMs
+        slurm.use_pcpu = false
 
 [parameters About]
 Order = 1
@@ -229,7 +245,7 @@ Order = 10
         Label = Scheduler VM Type
         Description = The VM type for scheduler node
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_E4_v4
+        DefaultValue = Standard_D4ads_v5
 
         [[[parameter loginMachineType]]]
         Label = Login node VM Type
@@ -246,6 +262,12 @@ Order = 10
         [[[parameter HTCMachineType]]]
         Label = HTC VM Type
         Description = The VM type for HTC execute nodes
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_F2s_v2
+
+        [[[parameter DynamicMachineType]]]
+        Label = Dyn VM Type
+        Description = The VM type for Dynamic execute nodes
         ParameterType = Cloud.MachineType
         DefaultValue = Standard_F2s_v2
 
@@ -276,6 +298,14 @@ Order = 10
         Config.MinValue = 1
         Config.IntegerOnly = true
 
+        [[[parameter MaxDynamicExecuteCoreCount]]]
+        Label = Max Dyn Cores
+        Description = The total number of Dynamic execute cores to start
+        DefaultValue = 100
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 1
+        Config.IntegerOnly = true
+
         [[[parameter HPCMaxScalesetSize]]]
         Label = Max VMs per Scaleset
         Description = The maximum number of VMs created per VM Scaleset e.g. switch in Slurm.
@@ -286,17 +316,31 @@ Order = 10
 
 
         [[[parameter HTCUseLowPrio]]]
-        Label = Spot
+        Label = HTC Spot
         DefaultValue = false
         Widget.Plugin = pico.form.BooleanCheckBox
         Widget.Label = Use Spot VMs for HTC execute hosts
 
         [[[parameter HTCSpotMaxPrice]]]
-        Label = Max Price
+        Label = Max Price HTC
         DefaultValue = -1
         Description = Max price for Spot VMs in USD (value of -1 will not evict based on price)
         Config.Plugin = pico.form.NumberTextBox
         Conditions.Excluded := HTCUseLowPrio isnt true
+        Config.MinValue = -1
+
+        [[[parameter DynamicUseLowPrio]]]
+        Label = DynSpot
+        DefaultValue = false
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Use Spot VMs for Dynamic execute hosts
+
+        [[[parameter DynamicSpotMaxPrice]]]
+        Label = Max Price Dyn
+        DefaultValue = -1
+        Description = Max price for Spot VMs in USD (value of -1 will not evict based on price)
+        Config.Plugin = pico.form.NumberTextBox
+        Conditions.Excluded := DynamicUseLowPrio isnt true
         Config.MinValue = -1
 
         [[[parameter NumberLoginNodes]]]
@@ -316,7 +360,6 @@ Order = 10
         Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
         ParameterType = Azure.Subnet
         Required = True
-
 [parameters Azure Managed Lustre FS]
 Order = 20
        
@@ -353,14 +396,14 @@ Order = 15
 
 
     [[parameters Scheduler Mount]]
-    Order = 15
+    Order = 5
         [[[parameter About sched]]]
         HideLabel = true
         Config.Plugin = pico.widget.HtmlTemplateWidget
         Config.Template = ''' <p>The directory <code>/sched</code> is a network attached mount and exists in all nodes of the cluster. 
             Slurm's configuration is linked in from this directory. It's managed by the scheduler node. 
             To disable the mount of the /sched directory, and to supply your own for a <strong>hybrid scenario</strong>, select the checkbox below '''
-        Order = 10
+        Order = 6
 
         [[[parameter NFSSchedDisable]]]
         HideLabel = true
@@ -451,7 +494,7 @@ Order = 15
     
 
 [parameters Advanced Settings]
-Order = 25
+Order = 20
 
     [[parameters Azure Settings]]
     Order = 10 
@@ -471,8 +514,8 @@ Order = 25
         ParameterType = StringList
         Config.Plugin = pico.form.Dropdown
         Config.FreeForm = true
-        Config.Entries := {[Value="22.05.3-1"], [Value="20.11.9-1"]}
-        DefaultValue = 22.05.3-1
+        Config.Entries := {[Value="22.05.8-1"], [Value="23.02.0-1"]}
+        DefaultValue = 22.05.8-1
 
         [[[parameter configuration_slurm_accounting_enabled]]]
         Label = Job Accounting
@@ -519,12 +562,6 @@ Order = 25
         DefaultValue = false
         ParameterType = Boolean
 	
-        [[[parameter configuration_slurm_launch_parameters]]]
-        Label = Deploy Slurm with Launch Parameters
-        Description = Deploy Slurm with Launch Parameters (comma delimited)
-        DefaultValue = ''
-        ParameterType = String
-
 
 
     [[parameters Software]]
@@ -562,21 +599,28 @@ Order = 25
         ParameterType = Cloud.Image
         Config.OS = linux
         DefaultValue = almalinux8
-        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu18", "almalinux8", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc"}
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu20", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc", "almalinux8"}
 
         [[[parameter HPCImageName]]]
         Label = HPC OS
         ParameterType = Cloud.Image
         Config.OS = linux
         DefaultValue = almalinux8
-        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu18", "almalinux8", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc"}
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu20", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc", "almalinux8"}
 
         [[[parameter HTCImageName]]]
         Label = HTC OS
         ParameterType = Cloud.Image
         Config.OS = linux
         DefaultValue = almalinux8
-        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu18", "almalinux8", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc"}
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu20", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc", "almalinux8"}
+
+        [[[parameter DynamicImageName]]]
+        Label = Dynamic OS
+        ParameterType = Cloud.Image
+        Config.OS = linux
+        DefaultValue = almalinux8
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.ubuntu20", "cycle.image.sles12-hpc", "cycle.image.sles15-hpc", "almalinux8"}
 
         [[[parameter SchedulerClusterInitSpecs]]]
         Label = Scheduler Cluster-Init
@@ -594,6 +638,12 @@ Order = 25
         Label = HPC Cluster-Init
         DefaultValue = =undefined
         Description = Cluster init specs to apply to HPC execute nodes
+        ParameterType = Cloud.ClusterInitSpecs
+
+        [[[parameter DynamicClusterInitSpecs]]]
+        Label = Dyn Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to Dynamic execute nodes
         ParameterType = Cloud.ClusterInitSpecs
 	
 
