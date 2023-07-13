@@ -1,0 +1,469 @@
+################################
+## Cluster Configuration File ##
+################################
+
+[cluster Grid Engine AMLFS]
+IconUrl = static/cloud/cluster/ui/ClusterIcon/gridengine.png
+FormLayout = selectionpanel
+Category = Schedulers
+
+Autoscale = $Autoscale
+
+    [[node defaults]]
+    UsePublicNetwork = $UsePublicNetwork
+    Credentials = $Credentials    
+    SubnetId = $SubnetId
+    Region = $Region
+    KeyPairLocation = ~/.ssh/cyclecloud.pem
+    
+        [[[configuration]]]
+        
+        # For fast spin-up after Deallocate, force an immediate re-converge on boot
+        cyclecloud.converge_on_boot = true
+
+        # Disable normal NFS exports and mounts
+        cyclecloud.mounts.sched.disabled = true
+        cyclecloud.mounts.shared.disabled = true
+        cyclecloud.exports.sched.disabled = true
+        cyclecloud.exports.shared.disabled = true
+        cyclecloud.exports.sched.samba.enabled = false
+        cyclecloud.exports.shared.samba.enabled = false
+        cyclecloud.exports.defaults.samba.enabled = false      
+        cshared.server.legacy_links_disabled = true
+	    
+        #Azure Managed Lustre filesystem information
+        amlfs.client_ver=$amlfs_client_install
+        amlfs.mgs_ip=$mgs_ip
+	    amlfs.mount_point=$client_path
+
+        [[[cluster-init cyclecloud/gridengine:default]]]
+        Optional = true
+
+        [[[cluster-init cyclecloud-amlfs:default:1.0.0]]]
+        Optional = true
+
+        [[[configuration cyclecloud.mounts.nfs_shared]]]
+        type = nfs
+        mountpoint = /shared
+        export_path = $NFSSharedExportPath
+        address = $NFSAddress
+        options = $NFSSharedMountOptions
+
+        [[[configuration cyclecloud.mounts.nfs_sched]]]
+        type = nfs
+        mountpoint = /sched
+        disabled = $NFSSchedDisable
+
+        [[[configuration cyclecloud.mounts.additional_nfs]]]
+        disabled = ${AdditionalNAS isnt true}
+        type = nfs
+        address = $AdditonalNFSAddress
+        mountpoint = $AdditionalNFSMountPoint
+        export_path = $AdditionalNFSExportPath
+        options = $AdditionalNFSMountOptions
+
+    [[node scheduler]]
+    MachineType = $SchedulerMachineType
+    ImageName = $SchedulerImageName
+    IsReturnProxy = $ReturnProxy
+    AdditionalClusterInitSpecs = $SchedulerClusterInitSpecs
+    
+        [[[configuration]]]
+        cyclecloud.mounts.nfs_sched.disabled = true
+        cyclecloud.mounts.nfs_shared.disabled = ${NFSType != "External"}
+
+        [[[cluster-init cyclecloud/gridengine:scheduler]]]
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $UsePublicNetwork
+
+        [[[input-endpoint ganglia]]]
+        PrivatePort = 8652
+        PublicPort = 8652
+
+        [[[volume sched]]]
+        Size = 1024
+        SSD = True
+        Mount = builtinsched
+        Persistent = False
+
+        [[[volume shared]]]
+        Size = ${ifThenElse(NFSType == "Builtin", FilesystemSize, 2)}
+        SSD = True
+        Mount = builtinshared
+        Persistent = ${NFSType == "Builtin"}
+
+        [[[configuration cyclecloud.mounts.builtinsched]]]
+        mountpoint = /sched
+        fs_type = xfs
+
+        [[[configuration cyclecloud.mounts.builtinshared]]]
+        disabled = ${NFSType != "Builtin"}
+        mountpoint = /shared
+        fs_type = xfs
+
+        [[[configuration cyclecloud.exports.builtinsched]]]
+        export_path = /sched
+        options = no_root_squash
+        samba.enabled = false
+        type = nfs
+
+        [[[configuration cyclecloud.exports.builtinshared]]]
+        disabled = ${NFSType != "Builtin"}
+        export_path = /shared
+        samba.enabled = false
+        type = nfs
+
+    [[nodearray hpc]]
+    MachineType = $HPCMachineType
+    ImageName = $HPCImageName
+    MaxCoreCount = $MaxHPCCoreCount
+
+    Azure.MaxScalesetSize = $MaxScalesetSize
+    AdditionalClusterInitSpecs = $HPCClusterInitSpecs
+
+
+        [[[configuration]]]
+        gridengine.autoscale = $Autoscale
+        gridengine.colocated = true
+
+        [[[cluster-init cyclecloud/gridengine:execute]]]
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $ExecuteNodesPublic
+
+
+    [[nodearray htc]]
+    MachineType = $HTCMachineType
+    ImageName = $HTCImageName
+    MaxCoreCount = $MaxHTCCoreCount
+
+    Interruptible = $HTCUseLowPrio
+    MaxPrice = $HTCSpotMaxPrice
+    AdditionalClusterInitSpecs = $HTCClusterInitSpecs
+
+
+        [[[configuration]]]
+        gridengine.autoscale = $Autoscale
+
+        [[[cluster-init cyclecloud/gridengine:execute]]]
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $ExecuteNodesPublic
+
+
+[parameters About]
+Order = 1
+
+    [[parameters About Grid Engine]]
+
+        [[[parameter gridengine]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<table role=\"presentation\"><tr><td><p>Grid Engine is a highly configurable open source workload manager. See the <a href=\"http://gridscheduler.sourceforge.net/\" target=\"_blank\">Grid Scheduler project site</a> for an overview.</p></td></tr></table>"
+
+[parameters Required Settings]
+Order = 10
+
+    [[parameters Virtual Machines ]]
+    Description = "The cluster, in this case, has two roles: the scheduler with shared filer and the execute hosts. Configure which VM types to use based on the requirements of your application."
+    Order = 20
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+
+        [[[parameter SchedulerMachineType]]]
+        Label = Scheduler VM Type
+        Description = The VM type for scheduler and shared filer.
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D4ads_v5
+
+        [[[parameter HPCMachineType]]]
+        Label = HPC VM Type
+        Description = The VM type for HPC nodes
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_F4s_v2
+        Config.Multiselect = true
+
+        [[[parameter HTCMachineType]]]
+        Label = HTC VM Type
+        Description = The VM type for HTC nodes
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_F2s_v2
+        Config.Multiselect = true
+
+
+    [[parameters Auto-Scaling]]
+    Description = "The cluster can autoscale to the workload, adding execute hosts as jobs are queued. To enable this check the box below and choose the initial and maximum core counts for the cluster"
+    Order = 30
+
+        [[[parameter Autoscale]]]
+        Label = Autoscale
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Start and stop execute instances automatically
+
+        [[[parameter MaxHTCCoreCount]]]
+        Label = Max HTC Cores
+        Description = The total number of HTC cores to start
+        DefaultValue = 100
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 1
+        Config.IntegerOnly = true
+
+        [[[parameter MaxHPCCoreCount]]]
+        Label = Max HPC Cores
+        Description = The total number of HPC cores to start
+        DefaultValue = 100
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 1
+        Config.IntegerOnly = true
+
+        [[[parameter MaxScalesetSize]]]
+        Label = Max HPC VMs in VMSS
+        Description = Max number of HPC VMs in a VMSS
+        DefaultValue = 100
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 1
+        Config.MaxValue = 1000
+        Config.IntegerOnly = true
+
+        [[[parameter HTCUseLowPrio]]]
+        Label = Spot
+        DefaultValue = false
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Use low priority instances for HTC hosts
+
+        [[[parameter HTCSpotMaxPrice]]]
+        Label = Max Price
+        DefaultValue = -1
+        Description = Max price for Spot VMs in USD (value of -1 will not evict based on price)
+        Config.Plugin = pico.form.NumberTextBox
+        Conditions.Excluded := HTCUseLowPrio isnt true
+        Config.MinValue = -1
+
+    [[parameters Networking]]
+    Order = 40
+
+        [[[parameter SubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        ParameterType = Azure.Subnet
+        Required = True
+
+[parameters Azure Managed Lustre FS]
+Order = 20
+       
+     [[parameters AMLFS Lustre Filesystem]]
+     Order = 30
+        [[[parameter About AMLFS Lustre Client]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+	Config.Template := "<table role=\"presentation\"></tr><tr><td><p>Information on AMLFS Lustre clients can be found on the <a href=\"https://learn.microsoft.com/en-us/azure/azure-managed-lustre/client-install/\" target=\"_blank\">Azure Managed Lustre Filesystem docs page</a>.</p></td></tr></table>"
+        Order = 20
+	
+	[[[parameter amlfs_client_install]]]
+        Label = Lustre Client Version
+        Description = Lustre Client version
+        DefaultValue = 2.15.1_29_gbae0abe
+        Required = True
+
+
+        [[[parameter mgs_ip]]]
+        Order = 20
+        Label = MGS IP Address
+        Description = MGS IP Address 
+        DefaultValue = 1.0.0.1
+        Required = True
+
+        [[[parameter client_path]]]
+        Label = Lustre Mount point 
+        Description = Path of the Luster mount point
+        DefaultValue = /lustre
+        Required = True
+
+[parameters Network Attached Storage]
+Order = 15
+
+
+    [[parameters Scheduler Mount]]
+    Order = 5
+        [[[parameter About sched]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template = ''' <p>The directory <code>/sched</code> is a network attached mount and exists in all nodes of the cluster. 
+            GridEngine Root directory resides in this share. It's managed by the scheduler node. 
+            To disable the mount of the GridEngine directory, and to supply your own for a <strong>hybrid scenario</strong>, select the checkbox below '''
+        Order = 6
+
+        [[[parameter NFSSchedDisable]]]
+        HideLabel = true
+        DefaultValue = false
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = External Scheduler
+
+    [[parameters Default NFS Share]]
+    Order = 10
+        [[[parameter About shared]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<p>The directory <code>/shared</code> is a network attached mount and exists in all nodes of the cluster. Users' home directories reside within this mountpoint with the base homedir <code>/shared/home</code>.<br><br>There are two options for providing this mount:<br> <strong>[Builtin]</strong>: The scheduler node is an NFS server that provides the mountpoint to the other nodes of the cluster.<br> <strong>[External NFS]</strong>: A network attached storage such as Azure Netapp Files, HPC Cache, or another VM running an NFS server, provides the mountpoint.</p>"
+        Order = 20
+
+        [[[parameter NFSType]]]
+        Label = NFS Type
+        ParameterType = StringList
+        Config.Label = Type of NFS to use for this cluster
+        Config.Plugin = pico.form.Dropdown
+        Config.Entries := {[Label="External NFS"; Value="External"], [Label="Builtin"; Value="Builtin"]}
+        DefaultValue = Builtin
+
+        [[[parameter NFSAddress]]]
+        Label = NFS IP Address
+        Description = The IP address or hostname of the NFS server. Also accepts a list comma-separated addresses, for example, to mount a frontend load-balanced Azure HPC Cache.
+        Config.ParameterType = String
+        Conditions.Hidden := NFSType != "External"
+
+        [[[parameter NFSSharedExportPath]]]
+        Label = Shared Export Path
+        Description = The path exported by the file system
+        DefaultValue = /shared
+        Conditions.Hidden := NFSType != "External"
+
+        [[[parameter NFSSharedMountOptions]]]
+        Label = NFS Mount Options
+        Description = NFS Client Mount Options
+        Conditions.Hidden := NFSType != "External"
+
+        [[[parameter FilesystemSize]]]
+        Label = Size (GB)
+        Description = The filesystem size
+        DefaultValue = 100
+
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 10
+        Config.MaxValue = 10240
+        Config.IntegerOnly = true
+        Conditions.Excluded := NFSType != "Builtin"
+
+    [[parameters Additional NFS Mount]]
+    Order = 20
+        [[[parameter Additional NFS Mount Readme]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<p>Mount another NFS endpoint on the cluster nodes</p>"
+        Order = 20
+
+        [[[parameter AdditionalNAS]]]
+        HideLabel = true
+        DefaultValue = false
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Add NFS mount
+
+        [[[parameter AdditonalNFSAddress]]]
+        Label = NFS IP Address 
+        Description = The IP address or hostname of the NFS server. Also accepts a list comma-separated addresses, for example, to mount a frontend load-balanced Azure HPC Cache.
+        Config.ParameterType = String
+        Conditions.Excluded := AdditionalNAS isnt true
+
+        [[[parameter AdditionalNFSMountPoint]]]
+        Label = NFS Mount Point
+        Description = The path at which to mount the Filesystem
+        DefaultValue = /data
+        Conditions.Excluded := AdditionalNAS isnt true
+
+        [[[parameter AdditionalNFSExportPath]]]
+        Label = NFS Export Path
+        Description = The path exported by the file system
+        DefaultValue = /data
+        Conditions.Excluded := AdditionalNAS isnt true
+
+        [[[parameter AdditionalNFSMountOptions]]]
+        Label = NFS Mount Options
+        Description = NFS Client Mount Options
+        Conditions.Excluded := AdditionalNAS isnt true
+    
+
+[parameters Advanced Settings]
+Order = 20
+
+    [[parameters Azure Settings]]
+    Order = 10 
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials
+
+    [[parameters Grid Engine Settings ]]
+    Description = "Section for configuring Grid Engine"
+    Order = 5
+
+        
+
+    [[parameters Software]]
+    Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
+    Order = 10
+
+        [[[parameter SchedulerImageName]]]
+        Label = Scheduler Base OS
+        ParameterType = Cloud.Image
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.centos8", "almalinux8"}
+        Config.OS = linux
+        DefaultValue = almalinux8
+
+        [[[parameter HPCImageName]]]
+        Label = HPC Base OS
+        ParameterType = Cloud.Image
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.centos8", "almalinux8"}
+        Config.OS = linux
+        DefaultValue = almalinux8
+
+        [[[parameter HTCImageName]]]
+        Label = HTC Base OS
+        ParameterType = Cloud.Image
+        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.centos8", "almalinux8"}
+        Config.OS = linux
+        DefaultValue = almalinux8
+
+        [[[parameter SchedulerClusterInitSpecs]]]
+        Label = Scheduler Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to the scheduler node
+        ParameterType = Cloud.ClusterInitSpecs
+    
+        [[[parameter HPCClusterInitSpecs]]]
+        Label = HPC Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to HPC nodes
+        ParameterType = Cloud.ClusterInitSpecs
+
+        [[[parameter HTCClusterInitSpecs]]]
+        Label = HTC Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to HTC nodes
+        ParameterType = Cloud.ClusterInitSpecs
+	
+
+    [[parameters Advanced Networking]]
+    Description = Advanced networking settings
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Use SSH tunnel to connect to CycleCloud (required if direct access is blocked)
+
+        [[[parameter UsePublicNetwork]]]
+        Label = Public Head Node
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Access scheduler node from the Internet
+
+        [[[parameter ExecuteNodesPublic]]]
+        Label = Public Execute
+        DefaultValue = false
+        ParameterType = Boolean
+        Config.Label = Access execute nodes from the Internet
+        Conditions.Excluded := UsePublicNetwork isnt true

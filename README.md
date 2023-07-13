@@ -12,9 +12,9 @@ This Project help you to install Azure Managed Lustre clients and mount Azure Ma
 2. [Azure Managed Lustre filesystem](https://learn.microsoft.com/en-us/azure/azure-managed-lustre/amlfs-overview) must be configured and running. 
 3. Supported OS versions : 
     1. CentOS 7 / RHEL7 
-    2. Alma Linux 8.x  
-    3. Ubuntu 18.04 
-    4. Ubuntu 20.04
+    2. Alma Linux 8.5 / 8.6  
+    3. Ubuntu 18.04 LTS
+    4. Ubuntu 20.04 LTS
 
 ## Configuring the Project ##
 1. Open a terminal session in CycleCloud server with the CycleCloud CLI enabled.
