@@ -11,10 +11,10 @@ This Project help you to install Azure Managed Lustre clients and mount Azure Ma
 1. [CycleCloud](https://learn.microsoft.com/en-us/azure/cyclecloud/qs-install-marketplace?view=cyclecloud-8) must be installed and running (CycleCloud 8.0 or later).
 2. [Azure Managed Lustre filesystem](https://learn.microsoft.com/en-us/azure/azure-managed-lustre/amlfs-overview) must be configured and running. 
 3. Supported OS versions : 
-    CentOS 7 / RHEL7 
-    Alma Linux 8.x  
-    Ubuntu 18.04 
-    Ubuntu 20.04
+    a. CentOS 7 / RHEL7 
+    b. Alma Linux 8.x  
+    c. Ubuntu 18.04 
+    d. Ubuntu 20.04
 
 ## Configuring the Project ##
 1. Open a terminal session in CycleCloud server with the CycleCloud CLI enabled.
@@ -36,7 +36,7 @@ cyclecloud import_template -f templates/slurm_301-amlfs.txt
 ## Configuring AMLFS in CycleCloud Portal ##
 
 The following parameters required for successful configuration.
-Please refer [Install Clients](https://learn.microsoft.com/en-us/azure/azure-managed-lustre/client-install) to check the AMLFS Client version for the selected OS. 
+Please refer [Install Clients](https://learn.microsoft.com/en-us/azure/azure-managed-lustre/client-install) document to check the AMLFS Client version for the selected OS. 
 
     1. Lustre Client Version.
         Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ).
