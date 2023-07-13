@@ -1,5 +1,5 @@
 # cyclecloud-amlfs
-This Project help you to install Azure Managed Lustre clients and mount Azure Managed Lustre filesystem on your CycleCloud HPC Clusters.
+This Project help you to automate the installation of Azure Managed Lustre clients and mount Azure Managed Lustre filesystem on your CycleCloud HPC Clusters.
 
 **Table of contents**
 - [Pre-Requisites](#pre-requisites)
@@ -32,7 +32,8 @@ cd cyclecloud-amlfs/
 cyclecloud project upload <locker name>
 ```
 4. Import the required template (Slurm/ OpenPBS or Gridenigne).
-please note: if you are using CycleCloud 8.4 with cyclecloud-slurm 3.0.1 version, please use the template named `slurm_301-amlfs.txt`. other releases cyclecloud-slurm releases (2.x) can use `slurm-amlfs.txt`
+please note: if you are using cyclecloud-slurm 3.0.1 version (Comes with CycleCloud 8.4), please use the template named `slurm_301-amlfs.txt`. other cyclecloud-slurm releases (2.x) can use `slurm-amlfs.txt` template.
+
 ``` bash
 cyclecloud import_template -f templates/slurm_301-amlfs.txt
 ```
