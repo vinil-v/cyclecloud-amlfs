@@ -41,10 +41,10 @@ cyclecloud import_template -f templates/slurm_301-amlfs.txt
 
 The following parameters required for successful configuration.
 Please refer [Install Clients](https://learn.microsoft.com/en-us/azure/azure-managed-lustre/client-install) document to check the pre-built AMLFS client version for the selected OS. 
-At the time of writing this document, the AMLFS Client version is 2.15.1_29_gbae0ab.
+
+At the time of writing this document, the AMLFS Client version is 2.15.1_29_gbae0ab. Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ). Ubuntu version: 2.15.1-29-gbae0abe & RedHat/ AlmaLinux / Centos : 2.15.1_29_gbae0ab
 
    1. Lustre Client Version.
-        1. Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ). Ubuntu version: 2.15.1-29-gbae0abe & RedHat/ AlmaLinux / Centos : 2.15.1_29_gbae0ab
    2. MGS IP Address
    3. Name of the Lustre Mount Point in the compute nodes
 
