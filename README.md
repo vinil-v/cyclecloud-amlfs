@@ -19,17 +19,17 @@ This Project help you to install Azure Managed Lustre clients and mount Azure Ma
     1. Slurm
     2. PBSpro
     3. Grid Engine
-    
+
 ## Configuring the Project ##
 1. Open a terminal session in CycleCloud server with the CycleCloud CLI enabled.
 2. Clone the cyclecloud-amlfs repo
 ``` bash
-$ git clone https://github.com/vinil-v/cyclecloud-amlfs
+git clone https://github.com/vinil-v/cyclecloud-amlfs
 ```
 3. Swtich to `cyclecloud-amlfs` project directory and upload the project to cyclecloud locker.
 ``` bash
-$ cd cyclecloud-amlfs/
-$ cyclecloud project upload <locker name>
+cd cyclecloud-amlfs/
+cyclecloud project upload <locker name>
 ```
 4. Import the required template (Slurm/ OpenPBS or Gridenigne).
 please note: if you are using CycleCloud 8.4 with cyclecloud-slurm 3.0.1 version, please use the template named `slurm_301-amlfs.txt`. other releases cyclecloud-slurm releases (2.x) can use `slurm-amlfs.txt`
