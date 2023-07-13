@@ -5,6 +5,7 @@
 
 [cluster Slurm-amlfs]
 FormLayout = selectionpanel
+IconUrl = static/cloud/cluster/ui/ClusterIcon/slurm.png
 Category = Schedulers
 
 Autoscale = $Autoscale
@@ -52,6 +53,9 @@ Autoscale = $Autoscale
         cshared.server.legacy_links_disabled = true
 
         [[[cluster-init cyclecloud/slurm:default]]]
+        Optional = true
+
+        [[[cluster-init cyclecloud-amlfs:default:1.0.0]]]
         Optional = true
 
         [[[configuration cyclecloud.mounts.nfs_shared]]]
