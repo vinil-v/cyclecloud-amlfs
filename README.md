@@ -5,7 +5,7 @@ This Project help you to install Azure Managed Lustre clients and mount Azure Ma
 - [Pre-Requisites](#pre-requisites)
 - [Configuring the Project](#configuring-the-project)
 - [Configuring AMLFS in CycleCloud Portal](#configuring-amlfs-in-cyclecloud-portal)
-- [Testing the user login](#testing-the-user-login)
+- [Testing](#testing)
 
 ## Pre-Requisites ##
 1. [CycleCloud](https://learn.microsoft.com/en-us/azure/cyclecloud/qs-install-marketplace?view=cyclecloud-8) must be installed and running (CycleCloud 8.0 or later).
@@ -56,7 +56,7 @@ Create new cluster from the imported template(Slurm-AMLFS in this case) and in t
 
 Start the cluster. Make sure that the AMLFS is running and MGS IP is reachable to all the nodes.
 
-## Checking the Lustre mounts ##
+## Testing  ##
 
 Login to the node and run `df -t lustre` to check the mounted lustre filesystem. the following output from CycleCloud 8.4, cyclecloud-slurm 3.0.1 and Almalinux 8.6.
 ``` bash
