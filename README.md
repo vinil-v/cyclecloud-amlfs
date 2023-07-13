@@ -33,7 +33,10 @@ cyclecloud import_template -f templates/slurm_301-amlfs.txt
 
 The following parameters required for successful configuration.
 
-    1. Lustre Client Version
+    1. Lustre Client Version.
+        Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ).
+             Ubuntu version: 2.15.1-29-gbae0abe
+             RedHat/ Alma / Centos : 2.15.1_29_gbae0ab
     2. MGS IP Address
     3. Lustre Mount Point in the compute nodes
 
@@ -46,7 +49,7 @@ Start the cluster. Make sure that the AMLFS is running and MGS IP is reachable t
 
 ## Checking the Lustre mounts ##
 
-Login to the node and run `df -t lustre` to check the mounted lustre filesystem
+Login to the node and run `df -t lustre` to check the mounted lustre filesystem. the following output from CycleCloud 8.4, cyclecloud-slurm 3.0.1 and Almalinux 8.6.
 ``` bash
 [root@s1-scheduler ~]# jetpack config cyclecloud.cluster_init_specs --json | egrep 'project\"|version'
             "project": "slurm",
