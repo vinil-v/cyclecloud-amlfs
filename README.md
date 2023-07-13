@@ -44,9 +44,7 @@ Please refer [Install Clients](https://learn.microsoft.com/en-us/azure/azure-man
 At the time of writing this document, the AMLFS Client version is 2.15.1_29_gbae0ab.
 
    1. Lustre Client Version.
-        Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ).
-             Ubuntu version: 2.15.1-29-gbae0abe
-             RedHat/ Alma / Centos : 2.15.1_29_gbae0ab
+        1. Ubuntu version has hyphen ( - ) and EL version has underscores ( _ ). Ubuntu version: 2.15.1-29-gbae0abe & RedHat/ AlmaLinux / Centos : 2.15.1_29_gbae0ab
    2. MGS IP Address
    3. Name of the Lustre Mount Point in the compute nodes
 
