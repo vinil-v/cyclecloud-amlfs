@@ -1,8 +1,8 @@
 #!/bin/sh
 #Author : Vinil Vadakkepurakkal
 # Integrating Azure Managed Lustre filesystem in CycleCloud
-#OS Tested : CentOS 7 / RHEL7 / Alma Linux 8 / Ubuntu 18.04
-#Env - Azure CycleCloud
+#OS Tested : CentOS 7 / RHEL7 / Alma Linux 8 / Ubuntu 18.04 / Ubuntu 20.04
+#Env - Azure CycleCloud 8.x
 
 OS_FAMILY=$(jetpack config platform_family)
 OS_VER=$(jetpack config platform_version | cut -d "." -f1)
