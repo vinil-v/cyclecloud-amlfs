@@ -6,7 +6,7 @@ This Project help you to automate the installation of Azure Managed Lustre clien
 - [Configuring the Project](#configuring-the-project)
 - [Configuring AMLFS in CycleCloud Portal](#configuring-amlfs-in-cyclecloud-portal)
 - [Testing](#testing)
-- [Umounting AMLFS using Schedule Events](#umounting-amlfs-using-schedule-events)
+- [Unmounting AMLFS using Schedule Events](#unmounting-amlfs-using-schedule-events)
 
 ## Pre-Requisites ##
 1. [CycleCloud](https://learn.microsoft.com/en-us/azure/cyclecloud/qs-install-marketplace?view=cyclecloud-8) must be installed and running (CycleCloud 8.0 or later).
@@ -81,7 +81,7 @@ filesystem_summary:  17010128952        1264 16151959984   1% /lustre
 
 ```
 
-## Umounting AMLFS using Schedule Events ##
+## Unmounting AMLFS using Schedule Events ##
 There is a known behaviour in Lustre if a VM has the Lustre mounted and it gets evicted or deleted as part of workflow without releasing the filesystem lock. Lustre will keep the lock for next 10 – 15 minutes before it releases.  Lustre has a ~10-minute timeout period to release the LOCK. The other VMs (Lustre clients) using the same Lustre mount point might experience intermittent hung mounts for 10-15 mins.
 
 The blog [How to unmount Azure Managed Lustre filesystem using Azure Scheduled Events](https://techcommunity.microsoft.com/t5/azure-high-performance-computing/how-to-unmount-azure-managed-lustre-filesystem-using-azure/ba-p/3917814) discuss about how we can use Azure Schedule Events to unmount Azure Managed Lustre cleanly in a VMSS or a SPOT VM to avoid the similar issue explained above.
