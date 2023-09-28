@@ -135,7 +135,8 @@ Autoscale = $Autoscale
 
     Interruptible = $UseLowPrio
     AdditionalClusterInitSpecs = $ExecuteClusterInitSpecs
-
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
 
         [[[configuration]]]
         # setting this completely disables the autoscaler from adding nodes to the cluster

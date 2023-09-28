@@ -118,10 +118,11 @@ Autoscale = $Autoscale
     MachineType = $HPCMachineType
     ImageName = $HPCImageName
     MaxCoreCount = $MaxHPCCoreCount
-
     Azure.MaxScalesetSize = $MaxScalesetSize
     AdditionalClusterInitSpecs = $HPCClusterInitSpecs
 
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
 
         [[[configuration]]]
         gridengine.autoscale = $Autoscale
@@ -141,7 +142,8 @@ Autoscale = $Autoscale
     Interruptible = $HTCUseLowPrio
     MaxPrice = $HTCSpotMaxPrice
     AdditionalClusterInitSpecs = $HTCClusterInitSpecs
-
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
 
         [[[configuration]]]
         gridengine.autoscale = $Autoscale

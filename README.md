@@ -79,4 +79,34 @@ lustrefs-OST0000_UUID 17010128952        1264 16151959984   1% /lustre[OST:0]
 filesystem_summary:  17010128952        1264 16151959984   1% /lustre
 
 ```
+
+## Umounting AMLFS using Schedule Events ##
+There is a known behaviour in Lustre if a VM has the Lustre mounted and it gets evicted or deleted as part of workflow without releasing the filesystem lock. Lustre will keep the lock for next 10 – 15 minutes before it releases.  Lustre has a ~10-minute timeout period to release the LOCK. The other VMs (Lustre clients) using the same Lustre mount point might experience intermittent hung mounts for 10-15 mins.
+
+The blog [How to unmount Azure Managed Lustre filesystem using Azure Scheduled Events](https://techcommunity.microsoft.com/t5/azure-high-performance-computing/how-to-unmount-azure-managed-lustre-filesystem-using-azure/ba-p/3917814) discuss about how we can use Azure Schedule Events to unmount Azure Managed Lustre cleanly in a VMSS or a SPOT VM to avoid the similar issue explained above.
+
+As of 8.2.2, CycleCloud can take advantage of Scheduled Events for VMs. This feature lets you put a script on your VM that will be automatically executed when one of the supported events occurs.
+You can refer to the following information in the below link:
+https://learn.microsoft.com/en-us/azure/cyclecloud/how-to/scheduled-events?view=cyclecloud-8
+
+First, we need to enable the terminate notification for Node Array. We need to update the PBS template and add `EnableTerminateNotification = true` and `TerminateNotificationTimeout = 10m`
+
+``` bash
+   [[nodearray hpc]]
+    Extends = nodearraybase
+    MachineType = $HPCMachineType
+    ImageName = $HPCImageName
+    MaxCoreCount = $MaxHPCExecuteCoreCount
+    Azure.MaxScalesetSize = $HPCMaxScalesetSize
+    AdditionalClusterInitSpecs = $HPCClusterInitSpecs
+
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
+```
+
+Import the template into the cyclecloud and start a new cluster once the node is up.
+You could run the following script on a compute or an execute node, it will set up the script for Jetpack to receive action before node termination.  
+
+This project will automatically enable the Schedule Event and umount the AMLFS incase there is a SPOT eviction or terminate/scale down nodes in a VMSS. so that the AMLFS will have a clean umount always. 
+
 All the best!
