@@ -181,7 +181,8 @@ Autoscale = $Autoscale
     MaxCoreCount = $MaxHPCExecuteCoreCount
     Azure.MaxScalesetSize = $HPCMaxScalesetSize
     AdditionalClusterInitSpecs = $HPCClusterInitSpecs
-
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
 
         [[[configuration]]]
         slurm.default_partition = true
@@ -198,7 +199,9 @@ Autoscale = $Autoscale
     Interruptible = $HTCUseLowPrio
     MaxPrice = $HTCSpotMaxPrice
     AdditionalClusterInitSpecs = $HTCClusterInitSpecs
-
+    EnableTerminateNotification = true
+    TerminateNotificationTimeout = 10m
+    
         [[[configuration]]]
         slurm.hpc = false
         slurm.partition = htc
