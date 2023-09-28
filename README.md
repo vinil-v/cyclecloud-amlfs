@@ -6,6 +6,7 @@ This Project help you to automate the installation of Azure Managed Lustre clien
 - [Configuring the Project](#configuring-the-project)
 - [Configuring AMLFS in CycleCloud Portal](#configuring-amlfs-in-cyclecloud-portal)
 - [Testing](#testing)
+- [Umounting AMLFS using Schedule Events](#umounting-amlfs-using-schedule-events)
 
 ## Pre-Requisites ##
 1. [CycleCloud](https://learn.microsoft.com/en-us/azure/cyclecloud/qs-install-marketplace?view=cyclecloud-8) must be installed and running (CycleCloud 8.0 or later).
@@ -89,7 +90,9 @@ As of 8.2.2, CycleCloud can take advantage of Scheduled Events for VMs. This fea
 You can refer to the following information in the below link:
 https://learn.microsoft.com/en-us/azure/cyclecloud/how-to/scheduled-events?view=cyclecloud-8
 
-First, we need to enable the terminate notification for Node Array. We need to update the PBS template and add `EnableTerminateNotification = true` and `TerminateNotificationTimeout = 10m`
+First, we need to enable the terminate notification for Node Array. We need to update the cyclecloud slurm or pbs template and add `EnableTerminateNotification = true` and `TerminateNotificationTimeout = 10m`
+
+The templates available in this project has this feature available.
 
 ``` bash
    [[nodearray hpc]]
@@ -104,9 +107,7 @@ First, we need to enable the terminate notification for Node Array. We need to u
     TerminateNotificationTimeout = 10m
 ```
 
-Import the template into the cyclecloud and start a new cluster once the node is up.
-You could run the following script on a compute or an execute node, it will set up the script for Jetpack to receive action before node termination.  
-
+Import the template into the cyclecloud and start a new cluster.
 This project will automatically enable the Schedule Event and umount the AMLFS incase there is a SPOT eviction or terminate/scale down nodes in a VMSS. so that the AMLFS will have a clean umount always. 
 
 All the best!
