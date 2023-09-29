@@ -11,13 +11,17 @@
 mkdir -p /opt/cycle/jetpack/scripts
 cat >>/opt/cycle/jetpack/scripts/onTerminate.sh << EOF
 #!/bin/sh
-MOUNT_POINT=$(jetpack config amlfs.mount_point)
-echo "unmounting Lustre filesystem $MOUNTPOINT from `hostname` | logger
 /usr/bin/fuser -ku $(jetpack config amlfs.mount_point)
 /usr/bin/sleep 5
 /usr/bin/umount -l $(jetpack config amlfs.mount_point)
-echo "Lustre filesystem unmounted from `hostname`" | logger
+echo "Lustre filesystem unmounted from `hostname`" >> /sched/umount_lustre.event
+EOF
+cat >>/opt/cycle/jetpack/scripts/onPreempt.sh << EOF
+#!/bin/sh
+/usr/bin/fuser -ku $(jetpack config amlfs.mount_point)
+/usr/bin/sleep 5
+/usr/bin/umount -l $(jetpack config amlfs.mount_point)
+echo "Lustre filesystem unmounted from `hostname`" >> /sched/umount_lustre.event
 EOF
 chmod +x /opt/cycle/jetpack/scripts/onTerminate.sh
-
-
+chmod +x /opt/cycle/jetpack/scripts/onPreempt.sh
