@@ -8,10 +8,11 @@
 # Preempt: The Spot Virtual Machine is being deleted (ephemeral disks are lost). This event is made available on a best effort basis
 # Terminate: The virtual machine is scheduled to be deleted.
 
-MOUNT_POINT=$(jetpack config amlfs.mount_point)
+
 mkdir -p /opt/cycle/jetpack/scripts
 cat >>/opt/cycle/jetpack/scripts/onTerminate.sh << EOF
 #!/bin/sh
+MOUNT_POINT=$(jetpack config amlfs.mount_point)
 echo "unmounting Lustre filesystem $MOUNTPOINT from `hostname` | logger
 /usr/bin/fuser -ku $MOUNTPOINT
 /usr/bin/sleep 5
