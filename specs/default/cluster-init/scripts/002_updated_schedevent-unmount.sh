@@ -34,7 +34,7 @@ done
 echo "`date "+%D %T"` [SUCCESS] $MOUNTPOINT successfully unmounted from `hostname`." | tee -a "$LOGFILE"
 EOF
 # unmounting the lustre filesystem on preempt event (spot instance)
-cat >>/opt/cycle/jetpack/scripts/onPreempt.sh << EOF
+cat >>/opt/cycle/jetpack/scripts/onPreempt.sh << EOF'
 #!/bin/sh
 LOGFILE=/sched/unmount_lustre.log
 MOUNTPOINT=$(jetpack config amlfs.mount_point)
@@ -59,7 +59,7 @@ EOF
 
 # unmounting the lustre filesystem on reboot event
 
-cat >>/opt/cycle/jetpack/scripts/onReboot.sh << EOF
+cat >>/opt/cycle/jetpack/scripts/onReboot.sh << 'EOF'
 #!/bin/sh
 LOGFILE=/sched/unmount_lustre.log
 MOUNTPOINT=$(jetpack config amlfs.mount_point)
@@ -83,7 +83,7 @@ echo "`date "+%D %T"` [SUCCESS] $MOUNTPOINT successfully unmounted from `hostnam
 EOF
 
 # unmounting the lustre filesystem on redeploy event
-cat >>/opt/cycle/jetpack/scripts/onRedeploy.sh << EOF
+cat >>/opt/cycle/jetpack/scripts/onRedeploy.sh << 'EOF'
 #!/bin/sh
 LOGFILE=/sched/unmount_lustre.log
 MOUNTPOINT=$(jetpack config amlfs.mount_point)
@@ -107,7 +107,7 @@ echo "`date "+%D %T"` [SUCCESS] $MOUNTPOINT successfully unmounted from `hostnam
 EOF
 
 # Unmounting the Lustre filesystem on Freeze event
-cat >>/opt/cycle/jetpack/scripts/onFreeze.sh << EOF
+cat >>/opt/cycle/jetpack/scripts/onFreeze.sh << 'EOF'
 #!/bin/sh
 LOGFILE=/sched/unmount_lustre.log
 MOUNTPOINT=$(jetpack config amlfs.mount_point)
