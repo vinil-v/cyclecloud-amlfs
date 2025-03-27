@@ -34,7 +34,7 @@ done
 echo "`date "+%D %T"` [SUCCESS] $MOUNTPOINT successfully unmounted from `hostname`." | tee -a "$LOGFILE"
 EOF
 # unmounting the lustre filesystem on preempt event (spot instance)
-cat >>/opt/cycle/jetpack/scripts/onPreempt.sh << EOF'
+cat >>/opt/cycle/jetpack/scripts/onPreempt.sh << 'EOF'
 #!/bin/sh
 LOGFILE=/sched/unmount_lustre.log
 MOUNTPOINT=$(jetpack config amlfs.mount_point)
